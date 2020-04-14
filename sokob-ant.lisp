@@ -1,13 +1,6 @@
 (cl:in-package :sokob-ant)
 
 
-;; constants
-(defvar *canvas-width* 1024)
-(defvar *canvas-height* 1024)
-(defvar *title* "Sokob-Ant")
-(defvar *stepsize* 5)
-(defvar *tile-size* 32)
-
 ;; colors
 (defvar *menu-button-stroke-color* (gamekit:vec4 0 0 0 1.0))
 (defvar *menu-button-color* (gamekit:vec4 0.8 0.4 0.1 0.8))
@@ -18,6 +11,7 @@
 
 ;; state variables
 (defvar *current-level* nil)
+(defvar *current-items-fun* nil)
 (defvar *level-time* 0)
 (defvar *level-steps* 0)
 
@@ -133,7 +127,7 @@
 	  (setf *selected-option* :exit-to-menu)
 	  (when *pressed-enter*
 	    (case *selected-option*
-	      (:continue (start-level))
+	      (:continue (continue-level))
 	      (:exit-to-menu (exit-to-menu)))
 	    (setf *pressed-enter* nil)))))
 
@@ -161,7 +155,7 @@
 	  items))
 
 (defun draw-gamefield (level items)
-  (draw-background *canvas-width* *canvas-height* 0 0)
+  (draw-background *canvas-width* *canvas-height* 0 0 :tile :bg-dirt)
   (draw-level-walls level) 
   (let ((rotation (case *last-direction*
 		    (:up 0)
@@ -189,10 +183,18 @@
 (setf *paused-state* (list :paused #'draw-ingame-menu #'handle-paused-menu))
 
 (setf *game-state* *main-menu-state*) ;; :level, :paused
-(setf *current-level* *first-level*)
 (setf *selected-option* :start-level)
 
+(defun setup-level-one ()
+  (setf *current-level* *first-level*)
+  (setf *current-items-fun* #'set-first-level-items))
+
 (defun start-level ()
+  (setup-level-one)
+  (setf *game-state* *level-state*)
+  (reset-positions))
+
+(defun continue-level ()
   (setf *game-state* *level-state*))
 
 (defun start-game ()
@@ -211,10 +213,4 @@
   (funcall (caddr *game-state*) *current-level* *items*))
 
 (defun reset-positions ()
-  (setf *items* (list
-		 (list 1 :default-leaf (list (gamekit:vec2 5 5) (gamekit:vec2 5 6)
-					   (gamekit:vec2 6 5) (gamekit:vec2 6 6)))
-	       (list 2 :rock (list (gamekit:vec2 4 7)))))
-  (setf *player-position* (gamekit:vec2 7 7))
-  (setf *last-direction* :up))
-
+  (funcall *current-items-fun*))

@@ -65,9 +65,11 @@
 
 (defun obj-can-be-pushed (object push-dir level items)
   (let ((new-pos (calc-new-obj-pos object push-dir)))
-    (if (all-tiles-free level new-pos)
-	t
-	nil)))
+    (and (all-tiles-free level new-pos)
+	 (not (another-object-on-same-tile (list (get-object-id object)
+						 (get-object-type object)
+						 new-pos)
+					   items)))))
 
 (defun handle-player-move (level items)
   (if (not *paused*)
@@ -92,7 +94,7 @@
 					       level items)
 			(push-object obj push-dir)
 			(player-move new-x new-y)))))))
-	(setf *pressed-directions* (list nil nil nil nil)))
+	(setf *pressed-directions* (list nil nil nil nil))))
       (progn
 	(setf *game-state* *paused-state*)
 	(setf *paused* nil)
