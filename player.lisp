@@ -1,7 +1,5 @@
 (in-package :sokob-ant)
 
-;; (defclass player-ant ())
-
 (defvar *player-position* (gamekit:vec2 3 3))
 (defvar *pressed-directions* (list nil nil nil nil))
 (defvar *last-direction* :up)
@@ -47,7 +45,8 @@
   (gamekit:bind-button :left :released (lambda () (setf (cadddr *pressed-directions*) nil)))
   (gamekit:bind-button :enter :pressed (lambda () (setf *pressed-enter* t)))
   (gamekit:bind-button :escape :pressed (lambda () (when (eql (car *game-state*) :level)
-						     (setf *paused* t)))))
+						     (setf *paused* t))))
+  (gamekit:bind-button :r :pressed (lambda () (reset-positions))))
 
 (defun draw-player (rotation position)
   (let ((real-x (+ (* *tile-size* (gamekit:x position)) 16))
@@ -60,10 +59,17 @@
     (gamekit:translate-canvas (- real-x) (- real-y))
     (gamekit:scale-canvas 0.5 0.5)))
 
-(defun push-object (object from-x from-y)
-  )
+(defun push-object (object push-vector)
+  (setf (caddr object)
+	(calc-new-obj-pos object push-vector)))
 
-(defun handle-player-move (level)
+(defun obj-can-be-pushed (object push-dir level items)
+  (let ((new-pos (calc-new-obj-pos object push-dir)))
+    (if (all-tiles-free level new-pos)
+	t
+	nil)))
+
+(defun handle-player-move (level items)
   (if (not *paused*)
       (let ((new-x (if (caddr *pressed-directions*)
 		       (1+ (gamekit:x *player-position*))
@@ -76,13 +82,17 @@
 			   (1- (gamekit:y *player-position*))
 			   (gamekit:y *player-position*)))))
 	(when (not (every #'not *pressed-directions*))
-	  (if (pos-is-free level (gamekit:vec2 new-x new-y))
-	      (player-move new-x new-y)
-	      (let ((pushable-object (object-front-pushable new-x new-y)))
-		(when pushable-object 
-		  (push-object pushable-object new-x new-y)
-		   (player-move new-x new-y)))))
-	  (setf *pressed-directions* (list nil nil nil nil))))
+	  (let ((new-position (gamekit:vec2 new-x new-y)))
+	    (if (eql (get-tile level new-position) :free)
+		(let ((obj (get-object items new-position)))
+		  (if (not obj) ; tile is completely free, player can move
+		      (player-move new-x new-y)
+		      (let ((push-dir (gamekit:subt new-position *player-position*)))
+		      (when (obj-can-be-pushed obj push-dir
+					       level items)
+			(push-object obj push-dir)
+			(player-move new-x new-y)))))))
+	(setf *pressed-directions* (list nil nil nil nil)))
       (progn
 	(setf *game-state* *paused-state*)
 	(setf *paused* nil)

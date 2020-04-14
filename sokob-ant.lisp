@@ -21,9 +21,8 @@
 (defvar *level-time* 0)
 (defvar *level-steps* 0)
 
-(defvar *items* (list
-	       (cons :default-leaf (gamekit:vec2 4 4))
-	       (cons :rock (gamekit:vec2 3 3))))
+(defvar *items* nil)
+(defvar *state-stack* '())
 
 (defvar *main-menu-state* (list)) 
 (defvar *level-state* (list)) 
@@ -45,6 +44,8 @@
 (gamekit:define-image :outer-corner "graphics/outer_corner_wall.png")
 (gamekit:define-image :inner-corner "graphics/inner_corner_wall.png")
 (gamekit:define-image :inner-wall "graphics/inner_wall.png")
+(gamekit:define-image :twig "graphics/twig.png")
+(gamekit:define-image :aphid "graphics/aphid.png")
 
 ;; sound assets
 (gamekit:define-sound :step-sound "sounds/default_steps.wav")
@@ -93,7 +94,7 @@
     (gamekit:translate-canvas (- trans-x) (- trans-y))))
 
 
-(defun draw-main-menu (level)
+(defun draw-main-menu (level items)
   (draw-background *canvas-width* *canvas-height* 0 0)
   (let* ((text "Sokob-Ant")
 	 (title-font (gamekit:make-font :menu-font 35))
@@ -108,8 +109,8 @@
   (draw-button "Exit" (/ *canvas-width* 2) (* (/ *canvas-height* 4) 2)
 	       :selected (equal *selected-option* :exit-game)))
 
-(defun draw-ingame-menu (level)
-  (draw-gamefield level)
+(defun draw-ingame-menu (level items)
+  (draw-gamefield level items)
   (gamekit:draw-rect (gamekit:vec2 0 0) *canvas-width* *canvas-height*
 		     :fill-paint *ingame-menu-background-color*)
   (let* ((text "Sokob-Ant")
@@ -125,7 +126,7 @@
   (draw-button "Exit to Main Menu" (/ *canvas-width* 2) (* (/ *canvas-height* 4) 2)
 	       :selected (equal *selected-option* :exit-to-menu)))
  
-(defun handle-paused-menu (level)
+(defun handle-paused-menu (level items)
    (if (car *pressed-directions*)
       (setf *selected-option* :continue)
       (if (cadr *pressed-directions*)
@@ -136,7 +137,7 @@
 	      (:exit-to-menu (exit-to-menu)))
 	    (setf *pressed-enter* nil)))))
 
-(defun handle-main-menu (level)
+(defun handle-main-menu (level items)
   (if (car *pressed-directions*)
       (setf *selected-option* :start-level)
       (if (cadr *pressed-directions*)
@@ -156,10 +157,10 @@
 
 (defun draw-items (level items)
   (mapcar (lambda (item)
-	    (draw-object (car item) (cdr item)))
+	    (draw-object (get-object-type item) (car (get-object-position item))))
 	  items))
 
-(defun draw-gamefield (level)
+(defun draw-gamefield (level items)
   (draw-background *canvas-width* *canvas-height* 0 0)
   (draw-level-walls level) 
   (let ((rotation (case *last-direction*
@@ -168,7 +169,7 @@
 		    (:left 1.5758)
 		    (:right 4.7173))))
     (draw-player rotation *player-position*))
-  (draw-items level *items*))
+  (draw-items level items))
 
 
 (defun draw-background (width height pos-x pos-y &key (tile nil))
@@ -204,7 +205,16 @@
   (gamekit:stop))
 
 (defmethod gamekit:draw ((app sokob-ant))
-  (funcall (cadr *game-state*) *current-level*))
+  (funcall (cadr *game-state*) *current-level* *items*))
 
 (defmethod gamekit:act ((app sokob-ant))
-  (funcall (caddr *game-state*) *current-level*))
+  (funcall (caddr *game-state*) *current-level* *items*))
+
+(defun reset-positions ()
+  (setf *items* (list
+		 (list 1 :default-leaf (list (gamekit:vec2 5 5) (gamekit:vec2 5 6)
+					   (gamekit:vec2 6 5) (gamekit:vec2 6 6)))
+	       (list 2 :rock (list (gamekit:vec2 4 7)))))
+  (setf *player-position* (gamekit:vec2 7 7))
+  (setf *last-direction* :up))
+

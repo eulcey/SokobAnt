@@ -29,34 +29,41 @@
   (nth (round (gamekit:x position))
        (nth (round (gamekit:y position)) level)))
 
-(defun test-object-position (item position)
-  (case (car item)
-    (:rock
-     (and (eql (gamekit:x position) (gamekit:x (cdr item)))
-	  (eql (gamekit:y position) (gamekit:y (cdr item)))))
-    (:default-leaf
-     (or
-      (and (eql (gamekit:x position) (gamekit:x (cdr item)))
-	   (eql (gamekit:y position) (gamekit:y (cdr item))))
-      (and (eql (gamekit:x position) (1+ (gamekit:x (cdr item))))
-	   (eql (gamekit:y position) (gamekit:y (cdr item))))
-      (and (eql (gamekit:x position) (gamekit:x (cdr item)))
-	   (eql (gamekit:y position) (1+ (gamekit:y (cdr item)))))
-      (and (eql (gamekit:x position) (1+ (gamekit:x (cdr item))))
-	   (eql (gamekit:y position) (1+ (gamekit:y (cdr item)))))))))
+(defun all-tiles-free (level positions)
+  (every (lambda (pos)
+	   (eql :free (get-tile level pos)))
+	 positions))
 
-(defun pos-is-free (level position)
-  (and (eq (get-tile level position) :free)
-       (not (some (lambda (item)
-		    (test-object-position item position))
-		  *items*))))
+(defun get-object-position (object)
+  (caddr object))
 
-(defun object-front-pushable (x y)
-  (let ((obj (mapcan (lambda (item)
-		       (and (test-object-position item (gamekit:vec2 x y))
-			    (list item)))
-		     *items*)))
-    (car obj)))
+(defun get-object-type (object)
+  (cadr object))
+
+(defun get-object-id (object)
+  (car object))
+
+(defun object-on-position (item position)
+  (labels ((test-recur (obj-positions position)
+	     (if (not obj-positions)
+		 nil
+		 (let ((obj-x (gamekit:x (car obj-positions)))
+		       (obj-y (gamekit:y (car obj-positions))))
+		   (if (and (= obj-x (gamekit:x position))
+			    (= obj-y (gamekit:y position)))
+		       t
+		       (test-recur (cdr obj-positions) position))))))
+    (test-recur (get-object-position item) position)))
+
+(defun get-object (items position)
+  (if (not items)
+      nil
+      (if (object-on-position (car items) position)
+	  (car items)
+	  (get-object (cdr items) position))))
+
+(defun calc-new-obj-pos (object push-vector)
+  (mapcar (lambda (pos) (gamekit:add push-vector pos)) (get-object-position object)))
 
 (defun draw-all-tiles (tiles actual-position max-size)
   (if (< (gamekit:x actual-position) (gamekit:x max-size))
