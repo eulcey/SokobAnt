@@ -12,6 +12,7 @@
 ;; state variables
 (defvar *current-level* nil)
 (defvar *current-items-fun* nil)
+(defvar *current-targets* nil)
 (defvar *level-time* 0)
 (defvar *level-steps* 0)
 
@@ -40,6 +41,7 @@
 (gamekit:define-image :inner-wall "graphics/inner_wall.png")
 (gamekit:define-image :twig "graphics/twig.png")
 (gamekit:define-image :aphid "graphics/aphid.png")
+(gamekit:define-image :ant-hole "graphics/ant_hole.png")
 
 ;; sound assets
 (gamekit:define-sound :step-sound "sounds/default_steps.wav")
@@ -61,8 +63,8 @@
   (init-controls))
 
 (defun draw-button (text mid-x mid-y &key (selected nil))
-  (let* ((width 100)
-  	 (height 50)
+  (let* ((width 300)
+  	 (height 100)
   	 (trans-x (- mid-x (/ width 2)))
   	 (trans-y (- mid-y (/ height 2)))
   	 (main-font (gamekit:make-font :menu-font 24))
@@ -88,7 +90,7 @@
     (gamekit:translate-canvas (- trans-x) (- trans-y))))
 
 
-(defun draw-main-menu (level items)
+(defun draw-main-menu (level items targets)
   (draw-background *canvas-width* *canvas-height* 0 0)
   (let* ((text "Sokob-Ant")
 	 (title-font (gamekit:make-font :menu-font 35))
@@ -96,15 +98,15 @@
    	 (text-width (cadr text-bounds))
   	 (text-height (caddr text-bounds)))
     (gamekit:draw-text text (gamekit:vec2 (/ (- *canvas-width* text-width) 2)
-					  (/ (- *canvas-height* text-height) 2))
+					  (- *canvas-height* (+ text-height 20)))
 		       :font title-font))
   (draw-button "Play" (/ *canvas-width* 2) (* (/ *canvas-height* 4) 3)
 	       :selected (equal *selected-option* :start-level))
   (draw-button "Exit" (/ *canvas-width* 2) (* (/ *canvas-height* 4) 2)
 	       :selected (equal *selected-option* :exit-game)))
 
-(defun draw-ingame-menu (level items)
-  (draw-gamefield level items)
+(defun draw-ingame-menu (level items targets)
+  (draw-gamefield level items targets)
   (gamekit:draw-rect (gamekit:vec2 0 0) *canvas-width* *canvas-height*
 		     :fill-paint *ingame-menu-background-color*)
   (let* ((text "Sokob-Ant")
@@ -113,13 +115,30 @@
    	 (text-width (cadr text-bounds))
   	 (text-height (caddr text-bounds)))
     (gamekit:draw-text text (gamekit:vec2 (/ (- *canvas-width* text-width) 2)
-					  (- *canvas-height* 30))
+					  (- *canvas-height* (+ text-height 20)))
 		       :font title-font))
   (draw-button "Continue" (/ *canvas-width* 2) (* (/ *canvas-height* 4) 3)
 	       :selected (equal *selected-option* :continue))
   (draw-button "Exit to Main Menu" (/ *canvas-width* 2) (* (/ *canvas-height* 4) 2)
 	       :selected (equal *selected-option* :exit-to-menu)))
- 
+
+(defun draw-result-menu (level items targets)
+  (draw-gamefield level items targets)
+  (gamekit:draw-rect (gamekit:vec2 0 0) *canvas-width* *canvas-height*
+		     :fill-paint *ingame-menu-background-color*)
+  (let* ((text "Level Completed")
+	 (title-font (gamekit:make-font :menu-font 35))
+  	 (text-bounds (multiple-value-list (gamekit:calc-text-bounds text title-font)))
+   	 (text-width (cadr text-bounds))
+  	 (text-height (caddr text-bounds)))
+    (gamekit:draw-text text (gamekit:vec2 (/ (- *canvas-width* text-width) 2)
+					  (- *canvas-height* (+ text-height 20)))
+		       :font title-font))
+  (draw-button "Next Level" (/ *canvas-width* 2) (* (/ *canvas-height* 4) 3)
+	       :selected (equal *selected-option* :next-level))
+  (draw-button "Exit to Main Menu" (/ *canvas-width* 2) (* (/ *canvas-height* 4) 2)
+	       :selected (equal *selected-option* :exit-to-menu)))
+
 (defun handle-paused-menu (level items)
    (if (car *pressed-directions*)
       (setf *selected-option* :continue)
@@ -128,6 +147,17 @@
 	  (when *pressed-enter*
 	    (case *selected-option*
 	      (:continue (continue-level))
+	      (:exit-to-menu (exit-to-menu)))
+	    (setf *pressed-enter* nil)))))
+
+(defun handle-result-menu (level items)
+   (if (car *pressed-directions*)
+      (setf *selected-option* :next-level)
+      (if (cadr *pressed-directions*)
+	  (setf *selected-option* :exit-to-menu)
+	  (when *pressed-enter*
+	    (case *selected-option*
+	      (:next-level (set-next-level))
 	      (:exit-to-menu (exit-to-menu)))
 	    (setf *pressed-enter* nil)))))
 
@@ -149,45 +179,54 @@
   (gamekit:scale-canvas 0.5 0.5)
   (gamekit:translate-canvas (- (gamekit:x position)) (- (gamekit:y position))))
 
-(defun draw-items (level items)
+(defun draw-items (level items targets)
+  (mapcar (lambda (target)
+	    (draw-object (get-object-type target) (car (get-object-position target))))
+	  targets)
   (mapcar (lambda (item)
 	    (draw-object (get-object-type item) (car (get-object-position item))))
 	  items))
 
-(defun draw-gamefield (level items)
+(defun draw-gamefield (level items targets)
   (draw-background *canvas-width* *canvas-height* 0 0 :tile :bg-dirt)
   (draw-level-walls level) 
+  (draw-items level items targets)
   (let ((rotation (case *last-direction*
 		    (:up 0)
 		    (:down 3.1415)
 		    (:left 1.5758)
 		    (:right 4.7173))))
-    (draw-player rotation *player-position*))
-  (draw-items level items))
-
+    (draw-player rotation *player-position*)))
 
 (defun draw-background (width height pos-x pos-y &key (tile nil))
-  (gamekit:scale-canvas 4.0 4.0)
+  (gamekit:scale-canvas 8.0 8.0)
   (if tile
       (gamekit:draw-image (gamekit:vec2 pos-x pos-y) tile)
-      (gamekit:draw-rect (gamekit:vec2 pos-x pos-y) *tile-size* *tile-size*
+      (gamekit:draw-rect (gamekit:vec2 pos-x pos-y) *canvas-width* *canvas-height*
 			 :fill-paint (gamekit:vec4 0.1 0.1 0.1 0.1)))
-  (gamekit:scale-canvas 0.25 0.25)
-  (if (< (* 4 *tile-size*) width)
-      (draw-background (- width (* 4 *tile-size*)) height *tile-size* pos-y))
-  (if (< (* 4 *tile-size*) height)
-      (draw-background width (- height (* 4 *tile-size*)) pos-x *tile-size*)))
+  (gamekit:scale-canvas 0.125 0.125))
+  ;; (if (< (* 1 *tile-size*) width)
+  ;;     (draw-background (- width (* 4 *tile-size*)) height *tile-size* pos-y :tile tile))
+  ;; (if (< (* 1 *tile-size*) height)
+  ;;     (draw-background width (- height (* 4 *tile-size*)) pos-x *tile-size* :tile tile)))
 
 (setf *main-menu-state* (list :main-menu #'draw-main-menu #'handle-main-menu))
 (setf *level-state* (list :level #'draw-gamefield #'handle-player-move))
 (setf *paused-state* (list :paused #'draw-ingame-menu #'handle-paused-menu))
+(setf *result-state* (list :next-level #'draw-result-menu #'handle-result-menu))
 
 (setf *game-state* *main-menu-state*) ;; :level, :paused
 (setf *selected-option* :start-level)
 
 (defun setup-level-one ()
-  (setf *current-level* *first-level*)
-  (setf *current-items-fun* #'set-first-level-items))
+  (setf *current-level* (get-first-level))
+  (setf *current-items-fun* #'set-first-level-items)
+  (setf *current-targets* (get-first-level-targets)))
+
+(defun setup-level-two ()
+  (setf *current-level* (get-second-level))
+  (setf *current-items-fun* #'set-second-level-items)
+  (setf *current-targets* (get-second-level-targets)))
 
 (defun start-level ()
   (setup-level-one)
@@ -196,6 +235,9 @@
 
 (defun continue-level ()
   (setf *game-state* *level-state*))
+
+(defun set-next-level ()
+  )
 
 (defun start-game ()
   (gamekit:start 'sokob-ant))
@@ -207,7 +249,7 @@
   (gamekit:stop))
 
 (defmethod gamekit:draw ((app sokob-ant))
-  (funcall (cadr *game-state*) *current-level* *items*))
+  (funcall (cadr *game-state*) *current-level* *items* *current-targets*))
 
 (defmethod gamekit:act ((app sokob-ant))
   (funcall (caddr *game-state*) *current-level* *items*))
