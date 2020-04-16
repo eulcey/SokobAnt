@@ -139,7 +139,7 @@
   (draw-button "Exit to Main Menu" (/ *canvas-width* 2) (* (/ *canvas-height* 4) 2)
 	       :selected (equal *selected-option* :exit-to-menu)))
 
-(defun handle-paused-menu (level items)
+(defun handle-paused-menu (level items targets)
    (if (car *pressed-directions*)
       (setf *selected-option* :continue)
       (if (cadr *pressed-directions*)
@@ -150,7 +150,7 @@
 	      (:exit-to-menu (exit-to-menu)))
 	    (setf *pressed-enter* nil)))))
 
-(defun handle-result-menu (level items)
+(defun handle-result-menu (level items targets)
    (if (car *pressed-directions*)
       (setf *selected-option* :next-level)
       (if (cadr *pressed-directions*)
@@ -161,7 +161,7 @@
 	      (:exit-to-menu (exit-to-menu)))
 	    (setf *pressed-enter* nil)))))
 
-(defun handle-main-menu (level items)
+(defun handle-main-menu (level items targets)
   (if (car *pressed-directions*)
       (setf *selected-option* :start-level)
       (if (cadr *pressed-directions*)
@@ -236,7 +236,11 @@
 (defun continue-level ()
   (setf *game-state* *level-state*))
 
-(defun set-next-level ()
+(defun show-level-completed ()
+  (setf *game-state* *result-state*))
+
+(defun set-next-level (level)
+  (format t "~S" "Level completed")
   )
 
 (defun start-game ()
@@ -252,7 +256,7 @@
   (funcall (cadr *game-state*) *current-level* *items* *current-targets*))
 
 (defmethod gamekit:act ((app sokob-ant))
-  (funcall (caddr *game-state*) *current-level* *items*))
+  (funcall (caddr *game-state*) *current-level* *items* *current-targets*))
 
 (defun reset-positions ()
   (funcall *current-items-fun*))

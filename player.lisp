@@ -71,7 +71,41 @@
 						 new-pos)
 					   items)))))
 
-(defun handle-player-move (level items)
+(defun pos-is-in-list (position lst)
+  (if (not lst)
+      nil
+      (if (and (= (gamekit:x position) (gamekit:x (car lst)))
+	       (= (gamekit:y position) (gamekit:y (car lst))))
+	  t
+	  (pos-is-in-list position (cdr lst)))))
+
+(defun target-is-all-occupied (pos target-pos)
+  (if (not target-pos)
+      t
+      (let ((first-target (car target-pos)))
+	(if (pos-is-in-list first-target pos)
+	    (target-is-all-occupied pos (cdr target-pos))
+	    nil))))
+
+(defun item-fits-target (item target)
+  (let ((item-pos (get-object-position item))
+	(target-pos (get-object-position target)))
+    (target-is-all-occupied item-pos target-pos)))
+
+(defun remove-target-if-fits (item targets)
+  (reduce (lambda (coll a) (if (not (item-fits-target item a))
+			       (cons a coll))) targets :initial-value nil))
+
+(defun state-is-win-condition (items targets)
+  (if (not targets)
+      t
+      (if (not (eql (not targets) (not items)))
+	  nil
+	  (let ((item (car items)))
+	    (let ((rest-targets (remove-target-if-fits item targets)))
+	      (state-is-win-condition (cdr items) rest-targets))))))
+	  
+(defun handle-player-move (level items targets)
   (if (not *paused*)
       (let ((new-x (if (caddr *pressed-directions*)
 		       (1+ (gamekit:x *player-position*))
@@ -94,7 +128,9 @@
 					       level items)
 			(push-object obj push-dir)
 			(player-move new-x new-y)))))))
-	(setf *pressed-directions* (list nil nil nil nil))))
+	  (setf *pressed-directions* (list nil nil nil nil)))
+	(if (state-is-win-condition items targets)
+	    (show-level-completed)))
       (progn
 	(setf *game-state* *paused-state*)
 	(setf *paused* nil)
