@@ -11,15 +11,19 @@ Building and Running the Game
 -------------------------------
 
 Running from the REPL:
-	(ql:quickload :trivial-gamekit/distribution)
-	(asdf:load-system "game")
-	(in-package :sokob-ant)
-	(start-game)
+```lisp
+(require 'asdf)
+(asdf:load-system "sokob-ant")
+(in-package :sokob-ant)
+(start-game)
+```
 
 Building the game from the REPL:
-	(ql:quickload :trivial-gamekit/distribution)
-	(asdf:load-system "game")
-	(gamekit.distribution:deliver :game 'package-name:game)
+```lisp
+(ql:quickload :trivial-gamekit/distribution)
+(asdf:load-system "sokob-ant")
+(gamekit.distribution:deliver :sokob-ant 'sokob-ant:sokob-ant)
+```
 
 Controls
 -----------
