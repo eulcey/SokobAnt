@@ -28,8 +28,11 @@ Controls are Keyboard only.
 Arrow keys:
 	Selecting options and moving the character
 	
-R:
+r:
 	Restarting a level
+
+z:
+	Revert one step
 	
 Enter:
 	Choosing the selected option
