@@ -8,6 +8,8 @@
 (defvar *menu-button-color-selected* (gamekit:vec4 0.8 0.4 0.1 1))
 (defvar *menu-text-color-selected* (gamekit:vec4 0.2 0.5 0.5 1.0))
 (defvar *ingame-menu-background-color* (gamekit:vec4 0.7 0.7 0.7 0.5))
+(defvar *top-banner-color* (gamekit:vec4 0.18 0.44 0.29 1))
+(defvar *top-border-color* (gamekit:vec4 0 0 0 1))
 
 ;; state variables
 (defvar *current-level* nil)
@@ -189,9 +191,15 @@
 	    (draw-object (get-object-type item) (car (get-object-position item))))
 	  items))
 
+(defun draw-top-banner (level)
+  (gamekit:draw-rect (gamekit:vec2 0 (* 32 30) ) *canvas-width* (- *canvas-width* (* 32 30)) 
+		     :fill-paint *top-banner-color*
+		     :stroke-paint *top-border-color*))
+
 (defun draw-gamefield (level items targets)
   (draw-background *canvas-width* *canvas-height* 0 0 :tile :bg-dirt)
   (draw-level-walls level) 
+  (draw-top-banner level)
   (draw-items level items targets)
   (let ((rotation (case *last-direction*
 		    (:up 0)
@@ -207,10 +215,6 @@
       (gamekit:draw-rect (gamekit:vec2 pos-x pos-y) *canvas-width* *canvas-height*
 			 :fill-paint (gamekit:vec4 0.1 0.1 0.1 0.1)))
   (gamekit:scale-canvas 0.125 0.125))
-  ;; (if (< (* 1 *tile-size*) width)
-  ;;     (draw-background (- width (* 4 *tile-size*)) height *tile-size* pos-y :tile tile))
-  ;; (if (< (* 1 *tile-size*) height)
-  ;;     (draw-background width (- height (* 4 *tile-size*)) pos-x *tile-size* :tile tile)))
 
 (setf *main-menu-state* (list :main-menu #'draw-main-menu #'handle-main-menu))
 (setf *level-state* (list :level #'draw-gamefield #'handle-player-move))
@@ -219,16 +223,6 @@
 
 (setf *game-state* *main-menu-state*) ;; :level, :paused
 (setf *selected-option* :start-level)
-
-;; (defun setup-level-one ()
-;;   (setf *current-level* (get-first-level))
-;;   (setf *current-items-fun* #'set-first-level-items)
-;;   (setf *current-targets* (get-first-level-targets)))
-
-;; (defun setup-level-two ()
-;;   (setf *current-level* (get-second-level))
-;;   (setf *current-items-fun* #'set-second-level-items)
-;;   (setf *current-targets* (get-second-level-targets)))
 
 (defun start-level ()
   (setf *current-items-fun* (caar *current-level*))
