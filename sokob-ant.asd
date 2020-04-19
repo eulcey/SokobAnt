@@ -6,5 +6,6 @@
 	       (:file "constants")
 	       (:file "player")
 	       (:file "level")
+	       (:file "level-definitions-2")
 	       (:file "level-definitions")
 	       (:file "sokob-ant")))
