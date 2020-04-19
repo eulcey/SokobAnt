@@ -61,7 +61,8 @@
 		 (:viewport-title *title*))
 
 (defmethod gamekit:post-initialize ((app sokob-ant))
-  (init-controls))
+  (init-controls)
+  (setf *current-level* (get-level-list)))
 
 (defun draw-button (text mid-x mid-y &key (selected nil))
   (let* ((width 300)
@@ -158,7 +159,7 @@
 	  (setf *selected-option* :exit-to-menu)
 	  (when *pressed-enter*
 	    (case *selected-option*
-	      (:next-level (set-next-level level))
+	      (:next-level (set-next-level))
 	      (:exit-to-menu (exit-to-menu)))
 	    (setf *pressed-enter* nil)))))
 
@@ -219,18 +220,19 @@
 (setf *game-state* *main-menu-state*) ;; :level, :paused
 (setf *selected-option* :start-level)
 
-(defun setup-level-one ()
-  (setf *current-level* (get-first-level))
-  (setf *current-items-fun* #'set-first-level-items)
-  (setf *current-targets* (get-first-level-targets)))
+;; (defun setup-level-one ()
+;;   (setf *current-level* (get-first-level))
+;;   (setf *current-items-fun* #'set-first-level-items)
+;;   (setf *current-targets* (get-first-level-targets)))
 
-(defun setup-level-two ()
-  (setf *current-level* (get-second-level))
-  (setf *current-items-fun* #'set-second-level-items)
-  (setf *current-targets* (get-second-level-targets)))
+;; (defun setup-level-two ()
+;;   (setf *current-level* (get-second-level))
+;;   (setf *current-items-fun* #'set-second-level-items)
+;;   (setf *current-targets* (get-second-level-targets)))
 
 (defun start-level ()
-  (setup-level-one)
+  (setf *current-items-fun* (caar *current-level*))
+  (setf *current-targets* (funcall (cadar *current-level*)))
   (setf *game-state* *level-state*)
   (reset-positions))
 
@@ -240,24 +242,29 @@
 (defun show-level-completed ()
   (setf *game-state* *result-state*))
 
-(defun set-next-level (level)
-  (format t "~S" "Level completed")
-  )
+(defun set-next-level ()
+  (let ((next-level (cdr *current-level*)))
+    (if next-level
+	(progn
+	  (setf *current-level* (cdr *current-level*))
+	  (start-level))
+	(exit-to-menu))))
 
 (defun start-game ()
   (gamekit:start 'sokob-ant))
 
 (defun exit-to-menu ()
+  (setf *current-level* (get-level-list))
   (setf *game-state* *main-menu-state*))
 
 (defun exit-game ()
   (gamekit:stop))
 
 (defmethod gamekit:draw ((app sokob-ant))
-  (funcall (cadr *game-state*) *current-level* *items* *current-targets*))
+  (funcall (cadr *game-state*) (funcall (caddar *current-level*)) *items* *current-targets*))
 
 (defmethod gamekit:act ((app sokob-ant))
-  (funcall (caddr *game-state*) *current-level* *items* *current-targets*))
+  (funcall (caddr *game-state*) (funcall (caddar *current-level*)) *items* *current-targets*))
 
 (defun reset-positions ()
   (funcall *current-items-fun*))

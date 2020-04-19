@@ -132,13 +132,13 @@
 			   (gamekit:y *player-position*)))))
 	(when (not (every #'not *pressed-directions*))
 	  (let ((new-position (gamekit:vec2 new-x new-y)))
-	    (if (eql (get-tile (cdr level) new-position) :free)
+	    (if (eql (get-tile level new-position) :free)
 		(let ((obj (get-object items new-position)))
 		  (if (not obj) ; tile is completely free, player can move
 		      (player-move new-x new-y)
 		      (let ((push-dir (gamekit:subt new-position *player-position*)))
 		      (when (obj-can-be-pushed obj push-dir
-					       (cdr level) items)
+					       level items)
 			(push-object obj push-dir)
 			(player-move new-x new-y)))))))
 	  (setf *pressed-directions* (list nil nil nil nil)))
