@@ -138,7 +138,7 @@
    	 (text-width (cadr text-bounds))
   	 (text-height (caddr text-bounds)))
     (gamekit:draw-text text (gamekit:vec2 (/ (- *canvas-width* text-width) 2)
-					  (- *canvas-height* (* (+ text-height 20) 2))
+					  (- *canvas-height* (* (+ text-height 20) 2)))
 		       :font title-font))
   (draw-button "Next Level" (/ *canvas-width* 2) (* (/ *canvas-height* 4) 3)
 	       :selected (equal *selected-option* :next-level))
