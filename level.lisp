@@ -7,22 +7,12 @@
     (gamekit:translate-canvas real-x real-y )
     (gamekit:rotate-canvas rotation)
     (gamekit:draw-image (gamekit:vec2 -16 -16) tile
-;			:origin (gamekit:vec2 1 1)
-;			:width 31
-;			:height 31)
-			)
+			:origin (gamekit:vec2 1 1)
+			:width 33
+			:height 33)
     (gamekit:rotate-canvas (- rotation))
     (gamekit:translate-canvas (- real-x) (- real-y))
     (gamekit:scale-canvas 0.5 0.5)))
-
-
-  ;; (gamekit:scale-canvas 2.0 2.0)
-  ;; (gamekit:translate-canvas (gamekit:x position) (gamekit:y position))
-  ;; (gamekit:rotate-canvas rotation)
-  ;; (gamekit:draw-image (gamekit:vec2 0 0) tile)
-  ;; (gamekit:rotate-canvas (- rotation))
-  ;; (gamekit:translate-canvas (- (gamekit:x position)) (- (gamekit:y position)))
-  ;; (gamekit:scale-canvas 0.5 0.5))
 
 (defun get-tile (level position)
   (car (nth (round (gamekit:x position))

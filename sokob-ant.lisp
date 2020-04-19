@@ -45,6 +45,7 @@
 (gamekit:define-image :aphid "graphics/aphid.png")
 (gamekit:define-image :ant-hole "graphics/ant_hole.png")
 (gamekit:define-image :big-ant-hole "graphics/big_ant_hole.png")
+(gamekit:define-image :title-pic "graphics/title.png")
 
 ;; sound assets
 (gamekit:define-sound :step-sound "sounds/default_steps.wav")
@@ -96,6 +97,7 @@
 
 (defun draw-main-menu (level items targets)
   (draw-background *canvas-width* *canvas-height* 0 0)
+  (gamekit:draw-image (gamekit:vec2 0 0) :title-pic)
   (let* ((text "Sokob-Ant")
 	 (title-font (gamekit:make-font :menu-font 35))
   	 (text-bounds (multiple-value-list (gamekit:calc-text-bounds text title-font)))
