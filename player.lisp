@@ -104,6 +104,19 @@
 	  (let ((item (car items)))
 	    (let ((rest-targets (remove-target-if-fits item targets)))
 	      (state-is-win-condition (cdr items) rest-targets))))))
+
+(defun is-goal-item (item)
+  (let ((item-type (get-object-type item)))
+    (or (eql item-type :aphid)
+	(eql item-type :default-leaf))))
+
+(defun get-goal-items (items)
+  (reduce (lambda (result item)
+	    (if (is-goal-item item)
+		(cons item result)
+		result))
+	  items
+	  :initial-value nil))
 	  
 (defun handle-player-move (level items targets)
   (if (not *paused*)
@@ -119,17 +132,17 @@
 			   (gamekit:y *player-position*)))))
 	(when (not (every #'not *pressed-directions*))
 	  (let ((new-position (gamekit:vec2 new-x new-y)))
-	    (if (eql (get-tile level new-position) :free)
+	    (if (eql (get-tile (cdr level) new-position) :free)
 		(let ((obj (get-object items new-position)))
 		  (if (not obj) ; tile is completely free, player can move
 		      (player-move new-x new-y)
 		      (let ((push-dir (gamekit:subt new-position *player-position*)))
 		      (when (obj-can-be-pushed obj push-dir
-					       level items)
+					       (cdr level) items)
 			(push-object obj push-dir)
 			(player-move new-x new-y)))))))
 	  (setf *pressed-directions* (list nil nil nil nil)))
-	(if (state-is-win-condition items targets)
+	(if (state-is-win-condition (get-goal-items items) targets)
 	    (show-level-completed)))
       (progn
 	(setf *game-state* *paused-state*)

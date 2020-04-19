@@ -3,9 +3,9 @@
 
 ;; colors
 (defvar *menu-button-stroke-color* (gamekit:vec4 0 0 0 1.0))
-(defvar *menu-button-color* (gamekit:vec4 0.8 0.4 0.1 0.8))
+(defvar *menu-button-color* (gamekit:vec4 0.7 0.6 0.2 0.8))
 (defvar *menu-text-color* (gamekit:vec4 0.1 0.7 0.7 1.0))
-(defvar *menu-button-color-selected* (gamekit:vec4 0.7 0.6 0.2 1))
+(defvar *menu-button-color-selected* (gamekit:vec4 0.8 0.4 0.1 1))
 (defvar *menu-text-color-selected* (gamekit:vec4 0.2 0.5 0.5 1.0))
 (defvar *ingame-menu-background-color* (gamekit:vec4 0.7 0.7 0.7 0.5))
 
@@ -42,6 +42,7 @@
 (gamekit:define-image :twig "graphics/twig.png")
 (gamekit:define-image :aphid "graphics/aphid.png")
 (gamekit:define-image :ant-hole "graphics/ant_hole.png")
+(gamekit:define-image :big-ant-hole "graphics/big_ant_hole.png")
 
 ;; sound assets
 (gamekit:define-sound :step-sound "sounds/default_steps.wav")
@@ -157,7 +158,7 @@
 	  (setf *selected-option* :exit-to-menu)
 	  (when *pressed-enter*
 	    (case *selected-option*
-	      (:next-level (set-next-level))
+	      (:next-level (set-next-level level))
 	      (:exit-to-menu (exit-to-menu)))
 	    (setf *pressed-enter* nil)))))
 

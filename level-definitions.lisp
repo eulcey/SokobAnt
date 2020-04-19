@@ -11,7 +11,7 @@
   (list (list 1 :ant-hole (list (gamekit:vec2 3 3)))))
 
 (defun get-first-level ()
-  (list (list (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0)
+ (cons 1 (list (list (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0)
 	      (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0))
 	(list (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0)
 	      (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0)
@@ -70,7 +70,7 @@
 	(list (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0)
 	      (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0)
 	      (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0)
-	      (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0))))
+	      (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0)))))
 
 (defun set-second-level-items ()
   (setf *items* (list
@@ -81,8 +81,8 @@
   (setf *last-direction* :up))
 
 (defun get-second-level-targets ()
-  (list (list 1 :ant-hole (list (gamekit:vec2 3 3)))
-	(list 2 :ant-hole (list (gamekit:vec2 5 7)))))
+  (list (list 2 :big-ant-hole (list (gamekit:vec2 5 7) (gamekit:vec2 5 8)
+				    (gamekit:vec2 6 7) (gamekit:vec2 5 8)))))
 
 (defun get-second-level ()
   (list (list (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0) (CONS :INNER-WALL  0)

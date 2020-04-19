@@ -6,7 +6,11 @@
     (gamekit:scale-canvas 2.0 2.0)
     (gamekit:translate-canvas real-x real-y )
     (gamekit:rotate-canvas rotation)
-    (gamekit:draw-image (gamekit:vec2 -16 -16) tile)
+    (gamekit:draw-image (gamekit:vec2 -16 -16) tile
+;			:origin (gamekit:vec2 1 1)
+;			:width 31
+;			:height 31)
+			)
     (gamekit:rotate-canvas (- rotation))
     (gamekit:translate-canvas (- real-x) (- real-y))
     (gamekit:scale-canvas 0.5 0.5)))
