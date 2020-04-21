@@ -50,3 +50,8 @@ Used Libraries
 
 Trivial-Gamekit
 https://borodust.github.io/projects/trivial-gamekit/
+
+Used Assets
+-----------
+Font: Courier Prime
+https://quoteunquoteapps.com/courierprime/ License: https://scripts.sil.org/OFL
