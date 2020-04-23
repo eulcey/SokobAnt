@@ -11,15 +11,19 @@ Building and Running the Game
 -------------------------------
 
 Running from the REPL:
-	(ql:quickload :trivial-gamekit/distribution)
-	(asdf:load-system "game")
-	(in-package :sokob-ant)
-	(start-game)
+```lisp
+(require 'asdf)
+(asdf:load-system "sokob-ant")
+(in-package :sokob-ant)
+(start-game)
+```
 
 Building the game from the REPL:
-	(ql:quickload :trivial-gamekit/distribution)
-	(asdf:load-system "game")
-	(gamekit.distribution:deliver :game 'package-name:game)
+```lisp
+(ql:quickload :trivial-gamekit/distribution)
+(asdf:load-system "sokob-ant")
+(gamekit.distribution:deliver :sokob-ant 'sokob-ant:sokob-ant)
+```
 
 Controls
 -----------
@@ -28,8 +32,11 @@ Controls are Keyboard only.
 Arrow keys:
 	Selecting options and moving the character
 	
-R:
+r:
 	Restarting a level
+
+z:
+	Revert one step
 	
 Enter:
 	Choosing the selected option
@@ -43,3 +50,8 @@ Used Libraries
 
 Trivial-Gamekit
 https://borodust.github.io/projects/trivial-gamekit/
+
+Used Assets
+-----------
+Font: Courier Prime
+https://quoteunquoteapps.com/courierprime/ License: https://scripts.sil.org/OFL
